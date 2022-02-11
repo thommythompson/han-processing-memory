@@ -15,18 +15,10 @@ void speelSpel(){
         // delay to avoid accidental double press
         delay(100);
         
-        int indexVanAangeklikteKaart = toonIndexVanAangeklikteKaart(spelGridCoordinaten, kaartenUitHetSpel, kaartenAangeklikt);
-        if(kaartenVolgorde[indexVanAangeklikteKaart] == 33){
-            kaartenAangeklikt[0] = indexVanAangeklikteKaart;
+        int indexVanAangeklikteKaart = toonIndexVanAangeklikteKaart(spelGridCoordinaten, kaartenVolgorde, kaartenUitHetSpel, kaartenAangeklikt);
+        if(kaartenVolgorde[indexVanAangeklikteKaart] == 31){
             spelerBeurten[spelerAanZet - 1]++;
             spelerScores[spelerAanZet - 1]--;
-            
-            delay = 1000;
-            toonSpelGrid(spelGridCoordinaten, kaartenVolgorde, kaartenUitHetSpel, kaartenAangeklikt, kaartenAfbeeldingen);
-            
-            kaartenAangeklikt[0] = 99; kaartenAangeklikt[1] = 99;
-            kaartenUitHetSpel[indexVanAangeklikteKaart] = true;
-
             if(aantalSpelers == 2){
                 switch(spelerAanZet){
                     case 1:
@@ -37,39 +29,40 @@ void speelSpel(){
                         break;
                 }
             }
-            
+            delay = 1000;
+            toonSpelGrid(spelGridCoordinaten, kaartenVolgorde, kaartenUitHetSpel, kaartenAangeklikt, kaartenAfbeeldingen);
+            kaartenAangeklikt[0] = 99; kaartenAangeklikt[1] = 99;
+        }
+        if(kaartenAangeklikt[0] == 99){
+            kaartenAangeklikt[0] = indexVanAangeklikteKaart;
         }else{
-            if(kaartenAangeklikt[0] == 99){
-                kaartenAangeklikt[0] = indexVanAangeklikteKaart;
-            }else{
-                kaartenAangeklikt[1] = indexVanAangeklikteKaart;
+            kaartenAangeklikt[1] = indexVanAangeklikteKaart;
 
-                if(kaartenVolgorde[kaartenAangeklikt[0]] == kaartenVolgorde[kaartenAangeklikt[1]]){
-                    spelerScores[spelerAanZet - 1]++;
-                    
-                    delay = 2000;
-                    toonSpelGrid(spelGridCoordinaten, kaartenVolgorde, kaartenUitHetSpel, kaartenAangeklikt, kaartenAfbeeldingen);
-                    
-                    // kaart uit het spel halen na het aanroepen van toolSpelGrid functie om het paar voor 2sec te laten zien
-                    kaartenUitHetSpel[kaartenAangeklikt[0]] = true;
-                }else{
-                    spelerBeurten[spelerAanZet - 1]++;
-                    if(aantalSpelers == 2){
-                        switch(spelerAanZet){
-                            case 1:
-                                spelerAanZet = 2;
-                                break;
-                            case 2:
-                                spelerAanZet = 1;
-                                break;
-                        }
-                    }
-                    delay = 1000;
-                    toonSpelGrid(spelGridCoordinaten, kaartenVolgorde, kaartenUitHetSpel, kaartenAangeklikt, kaartenAfbeeldingen);
-                }
+            if(kaartenVolgorde[kaartenAangeklikt[0]] == kaartenVolgorde[kaartenAangeklikt[1]]){
+                spelerScores[spelerAanZet - 1]++;
                 
-                kaartenAangeklikt[0] = 99; kaartenAangeklikt[1] = 99;
+                delay = 2000;
+                toonSpelGrid(spelGridCoordinaten, kaartenVolgorde, kaartenUitHetSpel, kaartenAangeklikt, kaartenAfbeeldingen);
+                
+                // kaart uit het spel halen na het aanroepen van toolSpelGrid functie om het paar voor 2sec te laten zien
+                kaartenUitHetSpel[kaartenAangeklikt[0]] = true;
+            }else{
+                spelerBeurten[spelerAanZet - 1]++;
+                if(aantalSpelers == 2){
+                    switch(spelerAanZet){
+                        case 1:
+                            spelerAanZet = 2;
+                            break;
+                        case 2:
+                            spelerAanZet = 1;
+                            break;
+                    }
+                }
+                delay = 1000;
+                toonSpelGrid(spelGridCoordinaten, kaartenVolgorde, kaartenUitHetSpel, kaartenAangeklikt, kaartenAfbeeldingen);
             }
+            
+            kaartenAangeklikt[0] = 99; kaartenAangeklikt[1] = 99;
         }
     }
 }
@@ -102,12 +95,12 @@ void toonSpelGrid(int[][] spelGridCoordinaten, int[] kaartenVolgorde, boolean[] 
     }
 }
 
-int toonIndexVanAangeklikteKaart(int[][] spelGridCoordinaten, boolean[] kaartenUitHetSpel, int[] kaartenAangeklikt){
+int toonIndexVanAangeklikteKaart(int[][] spelGridCoordinaten, int[] kaartenVolgorde, boolean[] kaartenUitHetSpel, int[] kaartenAangeklikt){
     int cardPressed = 99;
     
-    for(int i = 0; i < spelGridCoordinaten.length; i++){
+    for(int i = 0; i < kaartenVolgorde.length; i++){
         if(
-            !kaartenUitHetSpel[i]
+            !kaartenUitHetSpel[kaartenVolgorde[i]]
             && !arrayBevatWaarde(kaartenAangeklikt, i)
         ){
             if(

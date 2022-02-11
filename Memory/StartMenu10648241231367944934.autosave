@@ -219,7 +219,7 @@ int[][] berekenSpelGrid(int aantalSetjes, int offsetX, int offsetY){
     cardOffset = int((gridSquareSize * 0.1) / 2);
     cardSize = int(gridSquareSize * 0.9);
         
-    int[][] array = new int[(xMax * yMax)][3];
+    int[][] array = new int[(xMax * yMax) * 2][3];
     int index = 0;
     for(int x = 0; x < xMax; x++){
         for(int y = 0; y < yMax; y++){
@@ -238,24 +238,17 @@ int[][] berekenSpelGrid(int aantalSetjes, int offsetX, int offsetY){
 int[] schudKaarten(int aantalKaarten){
 
     boolean[] gevuld = new boolean[aantalKaarten];
-    kaartenVolgorde = new int[aantalKaarten];
+    int[] kaartenVolgorde = new int[aantalKaarten];
     
     if(doodsKaartenGeactiveerd){
-        gevuld = toevoegenDoodsKaarten(aantalKaarten, gevuld); 
+        gevuld = toevoegenDoodsKaarten(aantalKaarten, gevuld);
     }else if(aantalKaarten == 25){
         kaartenUitHetSpel[12] = true;
-        gevuld[12] = true;
     }
     
-    int aantalGevuld = 0; //<>//
-    for(int i = 0; i < gevuld.length; i++){
-      if(gevuld[i]){
-        aantalGevuld++;
-      }
-    }
-    
+
     int assignToIndex = int(random(0, aantalKaarten));
-    for(int i = 1; i <= ((aantalKaarten - aantalGevuld)/2); i++){ //<>//
+    for(int i = 1; i <= aantalSetjesKaarten; i++){
         
         // assign first card to index
         while(gevuld[assignToIndex] == true){
@@ -272,8 +265,8 @@ int[] schudKaarten(int aantalKaarten){
         gevuld[assignToIndex] = true;
     }
 
-    return kaartenVolgorde; //<>//
-} //<>//
+    return kaartenVolgorde;
+}
 
 boolean[] toevoegenDoodsKaarten(int aantalKaarten, boolean[] gevuld){
 
@@ -297,7 +290,7 @@ boolean[] toevoegenDoodsKaarten(int aantalKaarten, boolean[] gevuld){
         while(gevuld[assignToIndex] == true){
             assignToIndex = int(random(0, aantalKaarten));
         }
-        kaartenVolgorde[assignToIndex] = 33;
+        kaartenVolgorde[assignToIndex] = 21;
         gevuld[assignToIndex] = true;
     }
     return gevuld;

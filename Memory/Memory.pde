@@ -17,7 +17,7 @@ int delay;
 
 // PImage vars
 
-PImage[] kaartenAfbeeldingen = new PImage[23];
+PImage[] kaartenAfbeeldingen = new PImage[35];
 
 void setup(){
     size(800,800);
@@ -43,10 +43,21 @@ void setup(){
     kaartenAfbeeldingen[18] = loadImage("storm.png");
     kaartenAfbeeldingen[19] = loadImage("sun.png");
     kaartenAfbeeldingen[20] = loadImage("water.png");
-    kaartenAfbeeldingen[21] = loadImage("joker.jpg"); // 20 doodskaarten
-    kaartenAfbeeldingen[22] = loadImage("placeholder.jpeg"); // 21 placeholder
- 
-    kaartenVolgorde = schudKaarten(aantalSetjesKaarten);
+    kaartenAfbeeldingen[21] = loadImage("water.png");
+    kaartenAfbeeldingen[22] = loadImage("water.png");
+    kaartenAfbeeldingen[23] = loadImage("water.png");
+    kaartenAfbeeldingen[24] = loadImage("water.png");
+    kaartenAfbeeldingen[25] = loadImage("water.png");
+    kaartenAfbeeldingen[26] = loadImage("water.png");
+    kaartenAfbeeldingen[27] = loadImage("water.png");
+    kaartenAfbeeldingen[28] = loadImage("water.png");
+    kaartenAfbeeldingen[29] = loadImage("water.png");
+    kaartenAfbeeldingen[30] = loadImage("water.png");
+    kaartenAfbeeldingen[31] = loadImage("water.png");
+    kaartenAfbeeldingen[32] = loadImage("water.png");
+    kaartenAfbeeldingen[33] = loadImage("joker.jpg"); // 20 doodskaarten
+    kaartenAfbeeldingen[34] = loadImage("placeholder.jpeg"); // 21 placeholder
+
 }
 
 void draw(){
@@ -61,32 +72,6 @@ void draw(){
 }
 
 // Helper functions
-int[] schudKaarten(int aantalSetjesKaarten){
-
-    boolean[] gevuld = new boolean[aantalSetjesKaarten*2];
-    int[] kaartenVolgorde = new int[aantalSetjesKaarten*2];
-
-    int assignToIndex = int(random(0, aantalSetjesKaarten*2));
-    for(int i = 1; i <= aantalSetjesKaarten; i++){
-        
-        // assign first card to index
-        while(gevuld[assignToIndex] == true){
-            assignToIndex = int(random(0, aantalSetjesKaarten*2));
-        }
-        kaartenVolgorde[assignToIndex] = i;
-        gevuld[assignToIndex] = true;
-        
-        // assign second card to index
-        while(gevuld[assignToIndex] == true){
-            assignToIndex = int(random(0, aantalSetjesKaarten*2));
-        }
-        kaartenVolgorde[assignToIndex] = i;
-        gevuld[assignToIndex] = true;
-    }
-
-    return kaartenVolgorde;
-}
-
 void plaatsTekstInRect(String text, int x, int y, int width, int height, int textSize){
     textAlign(CENTER);
     textSize(textSize);
