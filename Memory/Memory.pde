@@ -7,6 +7,7 @@ int aantalSetjesKaarten = 12;
 boolean spelIsGestart = false;
 int spelerAanZet = 1;
 int[] spelerScores = new int[2];
+int[] spelerBeurten = new int[2];
 int[] kaartenAangeklikt = {99, 99};
 boolean[] kaartenUitHetSpel;
 int[] kaartenVolgorde;
@@ -19,7 +20,7 @@ int delay;
 PImage[] kaartenAfbeeldingen = new PImage[23];
 
 void setup(){
-    size(1200,1200);
+    size(800,800);
 
     kaartenAfbeeldingen[0] = null;
     kaartenAfbeeldingen[1] = loadImage("egg.png");

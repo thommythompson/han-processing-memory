@@ -30,6 +30,7 @@ void speelSpel(){
                 // kaart uit het spel halen na het aanroepen van toolSpelGrid functie om het paar voor 2sec te laten zien
                 kaartenUitHetSpel[kaartenVolgorde[kaartenAangeklikt[0]]] = true;
             }else{
+                spelerBeurten[spelerAanZet - 1]++;
                 if(aantalSpelers == 2){
                     switch(spelerAanZet){
                         case 1:
@@ -103,13 +104,14 @@ int toonIndexVanAangeklikteKaart(int[][] spelGridCoordinaten, int[] kaartenVolgo
 void toonSpelerScore(int player, int[] spelerScores, int lineHeight, int spelerAanZet){
     int xOffset = width / 30;
     int score = spelerScores[player-1];
+    int turn = spelerBeurten[player-1];
 
     switch(player){
         case 1:
-        xOffset = 20;
+        xOffset = xOffset;
         break;
         case 2:
-        xOffset = 520;
+        xOffset = width - int(xOffset * 4.5);
         break;
     }
     
@@ -121,6 +123,7 @@ void toonSpelerScore(int player, int[] spelerScores, int lineHeight, int spelerA
     
     textSize(lineHeight);
     textAlign(LEFT);
-    text("Player " + player, xOffset, 20);
-    text("Score: " + score, xOffset, 40);
+    text("Player " + player, xOffset, lineHeight);
+    text("Score: " + score, xOffset, lineHeight * 2);
+    text("Turns: " + turn, xOffset, lineHeight * 3);
 }
