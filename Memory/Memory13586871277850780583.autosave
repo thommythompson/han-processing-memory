@@ -15,7 +15,6 @@ int[] playersScore = new int[2];
 int[] playersTurns = new int[2];
 int cardClicked1;
 int cardClicked2;
-IntList cardsOrder = new IntList();
 IntList cardsRemoved = new IntList();
 ArrayList<Integer[]> cardsCoordinates = new ArrayList<Integer[]>();
 
@@ -28,15 +27,15 @@ PShape arrowR;
 PShape arrowL;
 
 // screen values
-int grid;
-int grid;
+int gridX;
+int gridY;
 
 void setup(){
 
     // set screen size
     size(800,800);
-    grid = int(width/20);
-    grid = int(height/20);
+    gridX = int(width/20);
+    gridY = int(height/20);
 
     // load images
     arrowR = loadShape("arrow.svg");
@@ -53,12 +52,14 @@ void draw(){
     // div
     fill(255,255,255,int(255 * 0.9));
     noStroke();
-    rect(grid * 2, grid * 2, width - (grid * 4), height - (grid * 4));
+    rect(gridX * 2, gridY * 2, width - (gridX * 4), height - (gridY * 4));
 
     if(showStartMenu) showStartMenu();
     // if(showGame) showGame();
     // if(showEndMenu) showEndMenu();
 }
+
+
 
 void changeScreen(String screen){
     switch(screen){
@@ -82,51 +83,12 @@ void changeScreen(String screen){
     }
 }
 
-void resetGame(){
-    // reset variables
-    // cardsCoordinates = calculateCardCoordinates();
-    // cardsOrder = randomizeGrid();
-}
-
-void showEndMenu(){
-
-    
-    // if aantalspeler ne 1 
-        // int winner = calculateWinner();
-        // if winner eq tie
-            // else show winner and loser score & turns
-    // else
-        // show player 1 score & turns
-
-    drawTextBox("Aantal spelers", "center", grid * 3, grid * 14, width - (grid * 6), grid * 3);
-
-
-    if(drawButtonWithText(grid * 3, grid * 12, width - (grid * 6), grid * 2, #8FBC8F, "Speel opnieuw")){
-        changeScreen("game");
-        resetGame();
-    }
-
-    if(drawButtonWithText(grid * 3, grid * 15, width - (grid * 6), grid * 2, #8FBC8F, "Naar menu")){
-        changeScreen("startMenu");
-        resetGame();
-    }
-}
-
 void showStartMenu(){
     
-    drawTextBox("Aantal spelers", "left", 0, grid * 3, grid * 3, 0, grid * 2);
-    playersCount = drawIncrementControl(width - (grid * 9), grid * 3, grid * 6, grid * 2, #808080, 1, 2, playersCount);
-
-    drawTextBox("Doodskaarten?", "left", 0, grid * 3, grid * 6, 0, grid * 2);
-    // drawStringSegmentControl
-
-    drawTextBox("Aantal Setjes", "left", 0, grid * 3, grid * 9, 0, grid * 2);
-    cardSetCount = drawIntSegmentControl(grid * 3, grid * 11, width - (grid * 6), grid * 2, #808080, cardSetCountOptions, cardSetCount);
-    
-    if(drawButtonWithText(grid * 3, grid * 14, width - (grid * 6), grid * 3, #8FBC8F, "Start Gane")){
-        changeScreen("game");
-        resetGame();
-    }
+    drawTextBox("Aantal spelers", "left", 0, gridX * 3, gridY * 3, 0, gridY);
+    // cardSetCount = drawIntSegmentControl(200, 100, 200, 100, #808080, cardSetCountOptions, cardSetCount);
+    // drawButtonWithText(200, 100, 200, 100, #808080, "test");
+    playersCount = drawIncrementControl(300, 100, 300, 100, #808080, 1, 2, playersCount);
 }
 
 int drawIncrementControl(int x, int y, int btnWidth, int btnHeight, color btnColor, int min, int max, int currentValue){
@@ -209,14 +171,14 @@ void drawTextBox(String text, String allignment, color textColor, int x, int y, 
     
     fill(textColor);
     textSize(textBoxHeight * 0.6);
-    y = y + int((textBoxHeight / 2) * 1.25);
     if(allignment == "left"){
         textAlign(LEFT);
     }else{
         textAlign(CENTER);
         x = x + (textBoxWidth / 2);
+        y = y + (textBoxHeight / 2);
     }
-    text(text, x, y);
+    text(text, x, y  * 1.25);
 }
 
 color changeColorBrightness(color originalColor, int factor){
