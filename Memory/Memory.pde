@@ -145,17 +145,13 @@ void showGame(){
 boolean gameIsFinished(){
   boolean returnValue = false;
   
-  int deathCardsPressed = 0;
   int cardsGuessed = 0; 
   for(int i = 0; i < cardsOrder.length; i++){
-    if(cardsOrder[i] != 33){
+    if(cardsOrder[i] != 32)
        if(cardsRemoved[i]) cardsGuessed++;
-    }else{
-       if(cardsRemoved[i]) deathCardsPressed++;
-    }
   }
   
-  if(cardsGuessed / 2 == (cardsCoordinates.length - (deathCardCount - deathCardsPressed)) / 2) returnValue = true;
+  if(cardsGuessed == (cardsCoordinates.length - deathCardCount)) returnValue = true;
   
   return returnValue;
 }
@@ -201,7 +197,7 @@ void showCardGrid(){
             // card is removed from the game
         }else if(arrayContainsValue(cardsClicked, i)){
             // kaart is aangeklikt
-            image(cardImages[cardsOrder[i]], cardsCoordinates[i][0], cardsCoordinates[i][1], cardsCoordinates[i][2], cardsCoordinates[i][2]); //<>//
+            image(cardImages[cardsOrder[i]], cardsCoordinates[i][0], cardsCoordinates[i][1], cardsCoordinates[i][2], cardsCoordinates[i][2]);
         }else{
             // show placeholder
             image(cardImages[33], cardsCoordinates[i][0], cardsCoordinates[i][1], cardsCoordinates[i][2], cardsCoordinates[i][2]);
