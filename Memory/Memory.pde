@@ -8,6 +8,7 @@ int playersCount = 1;
 int cardSetCount = 12;
 int[] cardSetCountOptions = {12, 18, 32};
 boolean deathCardsEnabled = false;
+int deathCardCount; // initlialized in addDeathCards function
 
 // in game card var's
 int playersTurn = 1;
@@ -42,8 +43,8 @@ void setup(){
     background = loadImage("background.jpeg");
 
     // load card image array
-    String[] cardImageNames = {"alien.png", "bag.png", "bat.png", "bone.png", "broom.png", "candle.png", "casket.png", "cat.png", "day.png", "devil.png", "eye.png", "frankenstein.png", "hand.png", "hat.png", "house.png", "lolly.png", "moon.png", "mummy.png", "owl.png", "pan.png", "potion.png", "pumpkin.png", "rip.png", "skull.png", "spider.png", "spooky1.png", "suprise.png", "tree.png", "vampire.png", "web.png", "witch2.png", "zombie.png",
-        "joker.png", // deathcard @ index 32
+    String[] cardImageNames = {"alien.png", "bag.png", "bat.png", "bone.png", "broom.png", "candle.png", "casket.png", "cat.png", "day.png", "devil.png", "eye.png", "frankenstein.png", "hand.png", "hat.png", "house.png", "lolly.png", "moon.png", "mummy.png", "owl.png", "pan.png", "potion.png", "pumpkin.png", "rip.png", "werewolf.png", "spider.png", "spooky1.png", "suprise.png", "tree.png", "vampire.png", "web.png", "witch2.png", "zombie.png",
+        "skull.png", // deathcard @ index 32
         "placeholder.png" // placeholder @ index 33
     };
     for(int i = 0; i < cardImages.length; i++){
@@ -89,12 +90,17 @@ void changeScreen(String screen){
 
 void showGame(){
 
+    if(gameIsFinished()){
+        changeScreen("endMenu");
+    }
+
     delay = 0;
-
-    // check if game finished
-    // show scores
+    
+    showPlayerScore(grid * 4, int(grid * 2.75), 1);
+    if(playersCount == 2) showPlayerScore(grid * 16, int(grid * 2.75), 2);
+    
     showCardGrid();
-
+    
     int cardClicked = cardClicked();
     if(cardClicked != 99){
         if(cardsOrder[cardClicked] == 32){
@@ -107,6 +113,7 @@ void showGame(){
             cardsRemoved[cardsClicked[0]] = true;
             delay = 2000;
             if(playersCount == 2) switchPlayerTruns();
+            cardsClicked[0] = cardsClicked[1] = 99;
         }else{
             if(cardsClicked[0] == 99){
                 cardsClicked[0] = cardClicked;
@@ -120,17 +127,49 @@ void showGame(){
                       
                     showCardGrid();
 
-                    cardsClicked[0] = cardsClicked[1] = 99;
                     cardsRemoved[cardsClicked[0]] = true;
                     cardsRemoved[cardsClicked[1]] = true;
+                    cardsClicked[0] = cardsClicked[1] = 99;
                 }else{
                     showCardGrid();
 
                     if(playersCount == 2) switchPlayerTruns();
                 }
+                
+                cardsClicked[0] = cardsClicked[1] = 99;
             }
         }
     }
+}
+
+boolean gameIsFinished(){
+  boolean returnValue = false;
+  
+  int deathCardsPressed = 0;
+  int cardsGuessed = 0; 
+  for(int i = 0; i < cardsOrder.length; i++){
+    if(cardsOrder[i] != 33){
+       if(cardsRemoved[i]) cardsGuessed++;
+    }else{
+       if(cardsRemoved[i]) deathCardsPressed++;
+    }
+  }
+  
+  if(cardsGuessed / 2 == (cardsCoordinates.length - (deathCardCount - deathCardsPressed)) / 2) returnValue = true;
+  
+  return returnValue;
+}
+
+void showPlayerScore(int x, int y, int player){
+    int score = playersScore[player-1];
+    int turn = playersTurns[player-1];
+
+    color textColor = 0;
+    if(player == playersTurn) textColor = #00FF00;
+
+    drawTextBox("Player " + player, "center", textColor, x, y, 0, grid);
+    drawTextBox("Score " + score, "center", textColor, x, int(y + grid * 0.5), 0, grid);
+    drawTextBox("Turn " + turn, "center", textColor, x, int(y + grid * 1), 0, grid);
 }
 
 void switchPlayerTruns(){
@@ -142,8 +181,6 @@ void switchPlayerTruns(){
             playersTurn = 1;
             break;
     }
-
-    cardsClicked[0] = cardsClicked[1] = 99;
 }
 
 int cardClicked(){
@@ -164,7 +201,7 @@ void showCardGrid(){
             // card is removed from the game
         }else if(arrayContainsValue(cardsClicked, i)){
             // kaart is aangeklikt
-            image(cardImages[cardsOrder[i]], cardsCoordinates[i][0], cardsCoordinates[i][1], cardsCoordinates[i][2], cardsCoordinates[i][2]);
+            image(cardImages[cardsOrder[i]], cardsCoordinates[i][0], cardsCoordinates[i][1], cardsCoordinates[i][2], cardsCoordinates[i][2]); //<>//
         }else{
             // show placeholder
             image(cardImages[33], cardsCoordinates[i][0], cardsCoordinates[i][1], cardsCoordinates[i][2], cardsCoordinates[i][2]);
@@ -279,8 +316,7 @@ void randomizeGrid(){
 }
 
 boolean[] addDeathCards(int cardCount, boolean[] filledSpots){
-    int deathCardCount = 0;
-
+  
     switch(cardCount){
         case 25:
             deathCardCount = 3;
@@ -322,11 +358,11 @@ void showEndMenu(){
             break;
     }
 
-    drawTextBox(text, "center", 0, grid * 4, grid * 6,  grid * 10, grid * 3);
-    drawTextBox("Player 1, score: " + playersScore[0] + ", turns: " + playersTurns[0] , "center", 0, grid * 7, grid * 10,  grid * 0, grid * 2);
+    drawTextBox(text, "center", 0, grid * 10, grid * 3,  0, grid * 3);
+    drawTextBox("Player 1, score: " + playersScore[0] + ", turns: " + playersTurns[0] , "center", 0, grid * 10, grid * 6,  0, grid * 2);
 
     if(playersCount > 1){
-        drawTextBox("Player 2, score: " + playersScore[1] + ", turns: " + playersTurns[1] , "center", 0, grid * 10, grid * 10,  grid * 0, grid * 2);
+        drawTextBox("Player 2, score: " + playersScore[1] + ", turns: " + playersTurns[1] , "center", 0, grid * 10, grid * 8,  0, grid * 2);
     }
 
     if(drawButtonWithText(grid * 3, grid * 12, width - (grid * 6), grid * 2, #8FBC8F, "Speel opnieuw")){
@@ -518,8 +554,11 @@ boolean rectHitTest(int x, int y, int btnWidth, int btnHeight){
 
     if(rectHoverTest(x, y, btnWidth, btnHeight)){
         if(mousePressed){
-            delay(50);
             returnValue = true;
+            
+            // to avoid dubble press
+            delay(50);
+            mousePressed = false;
         }
     }
 
