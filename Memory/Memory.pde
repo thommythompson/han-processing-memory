@@ -9,27 +9,24 @@ int cardSetCount = 12;
 int[] cardSetCountOptions = {12, 18, 32};
 boolean deathCardsEnabled = false;
 
-// in game cars var's
+// in game card var's
 int playersTurn = 1;
 int[] playersScore = new int[2];
 int[] playersTurns = new int[2];
-int cardClicked1;
-int cardClicked2;
-IntList cardsOrder = new IntList();
-IntList cardsRemoved = new IntList();
-ArrayList<Integer[]> cardsCoordinates = new ArrayList<Integer[]>();
+int[] cardsClicked = {99, 99};
+int[] cardsOrder; // initlialized in radomizeGrid function
+boolean[] cardsRemoved; // initlialized in resetGame function
+int[][] cardsCoordinates; // initlialized in resetGame function
 
 // image var's
-PImage[] cardsImages = new PImage[32];
-PImage deathCard;
-PImage cardBackside;
+PImage[] cardImages = new PImage[34];
 PImage background;
 PShape arrowR;
 PShape arrowL;
 
-// screen values
+// other var's
 int grid;
-int grid;
+int delay = 0;
 
 void setup(){
 
@@ -43,6 +40,15 @@ void setup(){
     arrowL = loadShape("arrow.svg");
     arrowL.rotate(radians(180));
     background = loadImage("background.jpeg");
+
+    // load card image array
+    String[] cardImageNames = {"alien.png", "bag.png", "bat.png", "bone.png", "broom.png", "candle.png", "casket.png", "cat.png", "day.png", "devil.png", "eye.png", "frankenstein.png", "hand.png", "hat.png", "house.png", "lolly.png", "moon.png", "mummy.png", "owl.png", "pan.png", "potion.png", "pumpkin.png", "rip.png", "skull.png", "spider.png", "spooky1.png", "suprise.png", "tree.png", "vampire.png", "web.png", "witch2.png", "zombie.png",
+        "joker.png", // deathcard @ index 32
+        "placeholder.png" // placeholder @ index 33
+    };
+    for(int i = 0; i < cardImages.length; i++){
+        cardImages[i] =  loadImage(cardImageNames[i]);
+    }
 }
 
 void draw(){
@@ -55,9 +61,10 @@ void draw(){
     noStroke();
     rect(grid * 2, grid * 2, width - (grid * 4), height - (grid * 4));
 
+    delay(delay);
     if(showStartMenu) showStartMenu();
-    // if(showGame) showGame();
-    // if(showEndMenu) showEndMenu();
+    if(showGame) showGame();
+    if(showEndMenu) showEndMenu();
 }
 
 void changeScreen(String screen){
@@ -66,7 +73,6 @@ void changeScreen(String screen){
             showStartMenu = true;
             showGame = false;
             showEndMenu = false;
-            // resetGame();
             break;
         case "game":
             showStartMenu = false;
@@ -77,29 +83,251 @@ void changeScreen(String screen){
             showStartMenu = false;
             showGame = false;
             showEndMenu = true;
-            // resetGame();
             break;
     }
 }
 
+void showGame(){
+
+    delay = 0;
+
+    // check if game finished
+    // show scores
+    showCardGrid();
+
+    int cardClicked = cardClicked();
+    if(cardClicked != 99){
+        if(cardsOrder[cardClicked] == 32){
+            cardsClicked[0] = cardClicked;
+            playersTurns[playersTurn - 1]++;
+            playersScore[playersTurn - 1]--;
+
+            showCardGrid();
+
+            cardsRemoved[cardsClicked[0]] = true;
+            delay = 2000;
+            if(playersCount == 2) switchPlayerTruns();
+        }else{
+            if(cardsClicked[0] == 99){
+                cardsClicked[0] = cardClicked;
+            }else{
+                cardsClicked[1] = cardClicked;
+                playersTurns[playersTurn - 1]++;
+                delay = 2000;
+
+                if(cardsOrder[cardsClicked[0]] == cardsOrder[cardsClicked[1]]){
+                    playersScore[playersTurn - 1]++;
+                      
+                    showCardGrid();
+
+                    cardsClicked[0] = cardsClicked[1] = 99;
+                    cardsRemoved[cardsClicked[0]] = true;
+                    cardsRemoved[cardsClicked[1]] = true;
+                }else{
+                    showCardGrid();
+
+                    if(playersCount == 2) switchPlayerTruns();
+                }
+            }
+        }
+    }
+}
+
+void switchPlayerTruns(){
+    switch(playersTurn){
+        case 1:
+            playersTurn = 2;
+            break;
+        case 2:
+            playersTurn = 1;
+            break;
+    }
+
+    cardsClicked[0] = cardsClicked[1] = 99;
+}
+
+int cardClicked(){
+    int cardPressed = 99;
+    
+    for(int i = 0; i < cardsCoordinates.length; i++){
+        if(!cardsRemoved[i] && !arrayContainsValue(cardsClicked, i))
+            if(rectHitTest(cardsCoordinates[i][0],cardsCoordinates[i][1],cardsCoordinates[i][2],cardsCoordinates[i][2]))
+                cardPressed = i;
+    }
+
+    return cardPressed;
+}
+
+void showCardGrid(){
+    for(int i = 0; i < cardsCoordinates.length; i++){
+        if(cardsRemoved[i]){
+            // card is removed from the game
+        }else if(arrayContainsValue(cardsClicked, i)){
+            // kaart is aangeklikt
+            image(cardImages[cardsOrder[i]], cardsCoordinates[i][0], cardsCoordinates[i][1], cardsCoordinates[i][2], cardsCoordinates[i][2]);
+        }else{
+            // show placeholder
+            image(cardImages[33], cardsCoordinates[i][0], cardsCoordinates[i][1], cardsCoordinates[i][2], cardsCoordinates[i][2]);
+        }
+
+        if(rectHoverTest(cardsCoordinates[i][0], cardsCoordinates[i][1], cardsCoordinates[i][2], cardsCoordinates[i][2])){
+            fill(255,255,255,int(255 * 0.1));
+            noStroke();
+            rect(cardsCoordinates[i][0], cardsCoordinates[i][1], cardsCoordinates[i][2], cardsCoordinates[i][2]);
+        }
+    }
+}
+
+boolean arrayContainsValue(int[] array, int value){
+    boolean arrayContainsValue = false;
+  
+    for (int i = 0; i < array.length; ++i)
+        if (array[i] == value) arrayContainsValue = true;
+    
+    return arrayContainsValue;
+}
+
 void resetGame(){
-    // reset variables
-    // cardsCoordinates = calculateCardCoordinates();
-    // cardsOrder = randomizeGrid();
+    playersTurn = 1;
+    playersScore[0] = playersScore[1] = 0;
+    playersTurns[0] = playersTurns[1] = 0;
+    cardsClicked[0] = cardsClicked[1] = 99;
+    
+    cardsCoordinates = calculateCardCoordinates();
+    cardsRemoved = new boolean[cardsCoordinates.length];
+    randomizeGrid();
+}
+
+int[][] calculateCardCoordinates(){
+    
+    // determine grid size & offset
+    int offsetY = grid * 4;
+    int offsetX = grid * 3;
+    int gridSize = width - (offsetY * 2);
+
+    // determine amount of cards per x & y axis
+    int cellsPerAxis = 0;
+    switch(cardSetCount){
+        case 12:
+            cellsPerAxis = 5;
+            break;
+        case 18:
+            cellsPerAxis = 6;
+            break;
+        case 32:
+            cellsPerAxis = 8;
+            break;
+    }
+
+    // determine card size & offset
+    int gridCellSize = int(gridSize / cellsPerAxis);
+    int cardOffset = int(gridCellSize * 0.5);
+    int cardSize = int(gridCellSize * 0.9);
+    
+    // calculating grid coordinates
+    int[][] array = new int[(cellsPerAxis * cellsPerAxis)][3];
+    int i = 0;
+    for(int x = 0; x < cellsPerAxis; x++){
+        for(int y = 0; y < cellsPerAxis; y++){
+        
+            array[i][0] = offsetX + cardOffset + (x * gridCellSize); // x left offset
+            array[i][1] = offsetY + cardOffset + (y * gridCellSize); // y top offset
+            array[i][2] = cardSize; 
+            
+            i++;
+        }
+    }
+  
+    return array;
+}
+
+void randomizeGrid(){
+    int cardCount = cardsCoordinates.length;
+    boolean[] filledSpots = new boolean[cardCount];
+    cardsOrder = new int[cardCount];
+
+    if(deathCardsEnabled){
+        filledSpots = addDeathCards(cardCount, filledSpots);
+    }else if(cardCount == 25){
+        // remove card in the middle
+        cardsRemoved[12] = true;
+        filledSpots[12] = true;
+    }
+    
+    // count spots already filled by deathcards
+    int filledSpotsCount = 0; 
+    for(int i = 0; i < filledSpots.length; i++)
+        if(filledSpots[i]) filledSpotsCount++;
+    
+    int assignToIndex = int(random(0, cardCount));
+    for(int i = 1; i <= ((cardCount - filledSpotsCount)/2); i++){
+        
+        // assign first card to index
+        while(filledSpots[assignToIndex] == true){
+            assignToIndex = int(random(0, cardCount));
+        }
+        cardsOrder[assignToIndex] = i;
+        filledSpots[assignToIndex] = true;
+        
+        // assign second card to index
+        while(filledSpots[assignToIndex] == true){
+            assignToIndex = int(random(0, cardCount));
+        }
+        cardsOrder[assignToIndex] = i;
+        filledSpots[assignToIndex] = true;
+    }
+}
+
+boolean[] addDeathCards(int cardCount, boolean[] filledSpots){
+    int deathCardCount = 0;
+
+    switch(cardCount){
+        case 25:
+            deathCardCount = 3;
+            break;
+        case 36:
+            deathCardCount = 6;
+            break;
+        case 64:
+            deathCardCount = 10;
+            break;
+    }
+
+    int assignToIndex = int(random(0, cardCount));
+    for(int i = 0; i < deathCardCount; i++){
+        
+        // assign first card to index
+        while(filledSpots[assignToIndex] == true) assignToIndex = int(random(0, cardCount));
+        cardsOrder[assignToIndex] = 32;
+        filledSpots[assignToIndex] = true;
+    }
+    return filledSpots;
+
 }
 
 void showEndMenu(){
 
-    
-    // if aantalspeler ne 1 
-        // int winner = calculateWinner();
-        // if winner eq tie
-            // else show winner and loser score & turns
-    // else
-        // show player 1 score & turns
+    String winner = calculateWinner();
 
-    drawTextBox("Aantal spelers", "center", grid * 3, grid * 14, width - (grid * 6), grid * 3);
+    String text = "Error determining winner";
+    switch(winner){
+        case "tie":
+            text = "It's a tie!";
+            break;
+        case "player1":
+            text = "Player 1 has won!";
+            break;
+        case "player2":
+            text = "Player 2 has won!";
+            break;
+    }
 
+    drawTextBox(text, "center", 0, grid * 4, grid * 6,  grid * 10, grid * 3);
+    drawTextBox("Player 1, score: " + playersScore[0] + ", turns: " + playersTurns[0] , "center", 0, grid * 7, grid * 10,  grid * 0, grid * 2);
+
+    if(playersCount > 1){
+        drawTextBox("Player 2, score: " + playersScore[1] + ", turns: " + playersTurns[1] , "center", 0, grid * 10, grid * 10,  grid * 0, grid * 2);
+    }
 
     if(drawButtonWithText(grid * 3, grid * 12, width - (grid * 6), grid * 2, #8FBC8F, "Speel opnieuw")){
         changeScreen("game");
@@ -108,8 +336,25 @@ void showEndMenu(){
 
     if(drawButtonWithText(grid * 3, grid * 15, width - (grid * 6), grid * 2, #8FBC8F, "Naar menu")){
         changeScreen("startMenu");
-        resetGame();
     }
+}
+
+String calculateWinner(){
+    String returnValue = "player1";
+
+    if(playersCount > 1){
+        if(playersScore[0] == playersScore[1]){
+            returnValue = "tie";
+        }
+        if(playersScore[0] > playersScore[1]){
+            returnValue = "player1";
+        }
+        if(playersScore[1] > playersScore[0]){
+            returnValue = "player2";
+        }
+    }
+
+    return returnValue;
 }
 
 void showStartMenu(){
@@ -118,7 +363,16 @@ void showStartMenu(){
     playersCount = drawIncrementControl(width - (grid * 9), grid * 3, grid * 6, grid * 2, #808080, 1, 2, playersCount);
 
     drawTextBox("Doodskaarten?", "left", 0, grid * 3, grid * 6, 0, grid * 2);
-    // drawStringSegmentControl
+    String[] options = {"Ja", "Nee"};
+    String currentlySelected = deathCardsEnabled ? "Ja" : "Nee";
+    switch(drawStringSegmentControl(grid * 11, grid * 6, grid* 6, grid * 2, #808080, options, currentlySelected)){
+        case "Ja":
+            deathCardsEnabled = true;
+            break;
+        case "Nee":
+            deathCardsEnabled = false;
+            break;
+    }
 
     drawTextBox("Aantal Setjes", "left", 0, grid * 3, grid * 9, 0, grid * 2);
     cardSetCount = drawIntSegmentControl(grid * 3, grid * 11, width - (grid * 6), grid * 2, #808080, cardSetCountOptions, cardSetCount);
@@ -183,6 +437,26 @@ int drawIntSegmentControl(int x, int y, int btnWidth, int btnHeight, color btnCo
             newBtnColor = btnColor;
         }
         if(drawButtonWithText(x + (i * btnWidth), y, btnWidth, btnHeight, newBtnColor, nf(options[i]))){
+            returnValue = options[i];
+        }
+    }
+
+    return returnValue;
+}
+
+String drawStringSegmentControl(int x, int y, int btnWidth, int btnHeight, color btnColor, String[] options, String currentlySelected){
+
+    String returnValue = currentlySelected;
+    btnWidth = btnWidth / options.length;
+    color newBtnColor = btnColor;
+
+    for(int i = 0; i < options.length; i++){
+        if(options[i] == currentlySelected){
+            newBtnColor = changeColorBrightness(btnColor, -30);
+        }else{
+            newBtnColor = btnColor;
+        }
+        if(drawButtonWithText(x + (i * btnWidth), y, btnWidth, btnHeight, newBtnColor, options[i])){
             returnValue = options[i];
         }
     }
