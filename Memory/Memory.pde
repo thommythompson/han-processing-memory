@@ -34,7 +34,6 @@ void setup(){
     // set screen size
     size(800,800);
     grid = int(width/20);
-    grid = int(height/20);
 
     // load images
     arrowR = loadShape("arrow.svg");
@@ -129,7 +128,6 @@ void showGame(){
 
                     cardsRemoved[cardsClicked[0]] = true;
                     cardsRemoved[cardsClicked[1]] = true;
-                    cardsClicked[0] = cardsClicked[1] = 99;
                 }else{
                     showCardGrid();
 
