@@ -100,7 +100,7 @@ void showGame(){
     
     showCardGrid();
     
-    int cardClicked = cardClicked();
+    int cardClicked = returnCardClicked();
     if(cardClicked != 99){
         if(cardsOrder[cardClicked] == 32){
             cardsClicked[0] = cardClicked;
@@ -111,7 +111,7 @@ void showGame(){
 
             cardsRemoved[cardsClicked[0]] = true;
             delay = 2000;
-            if(playersCount == 2) switchPlayerTruns();
+            if(playersCount == 2) switchPlayerTurns();
             cardsClicked[0] = cardsClicked[1] = 99;
         }else{
             if(cardsClicked[0] == 99){
@@ -131,7 +131,7 @@ void showGame(){
                 }else{
                     showCardGrid();
 
-                    if(playersCount == 2) switchPlayerTruns();
+                    if(playersCount == 2) switchPlayerTurns();
                 }
                 
                 cardsClicked[0] = cardsClicked[1] = 99;
@@ -166,7 +166,7 @@ void showPlayerScore(int x, int y, int player){
     drawTextBox("Turn " + turn, "center", textColor, x, int(y + grid * 1), 0, grid);
 }
 
-void switchPlayerTruns(){
+void switchPlayerTurns(){
     switch(playersTurn){
         case 1:
             playersTurn = 2;
@@ -177,7 +177,7 @@ void switchPlayerTruns(){
     }
 }
 
-int cardClicked(){
+int returnCardClicked(){
     int cardPressed = 99;
     
     for(int i = 0; i < cardsCoordinates.length; i++){
@@ -407,7 +407,7 @@ void showStartMenu(){
     drawTextBox("Aantal Setjes", "left", 0, grid * 3, grid * 9, 0, grid * 2);
     cardSetCount = drawIntSegmentControl(grid * 3, grid * 11, width - (grid * 6), grid * 2, #808080, cardSetCountOptions, cardSetCount);
     
-    if(drawButtonWithText(grid * 3, grid * 14, width - (grid * 6), grid * 3, #8FBC8F, "Start Gane")){
+    if(drawButtonWithText(grid * 3, grid * 14, width - (grid * 6), grid * 3, #8FBC8F, "Start Game")){
         changeScreen("game");
         resetGame();
     }
