@@ -87,60 +87,7 @@ void changeScreen(String screen){
     }
 }
 
-void showGame(){
-
-    if(gameIsFinished()){
-        changeScreen("endMenu");
-    }
-
-    delay = 0;
-    
-    showPlayerScore(grid * 4, int(grid * 2.75), 1);
-    if(playersCount == 2) showPlayerScore(grid * 16, int(grid * 2.75), 2);
-    
-    showCardGrid();
-    
-    int cardClicked = returnCardClicked();
-    if(cardClicked != 99){
-        if(cardsOrder[cardClicked] == 32){
-            cardsClicked[0] = cardClicked;
-            playersTurns[playersTurn - 1]++;
-            playersScore[playersTurn - 1]--;
-
-            showCardGrid();
-
-            cardsRemoved[cardsClicked[0]] = true;
-            delay = 2000;
-            if(playersCount == 2) switchPlayerTurns();
-            cardsClicked[0] = cardsClicked[1] = 99;
-        }else{
-            if(cardsClicked[0] == 99){
-                cardsClicked[0] = cardClicked;
-            }else{
-                cardsClicked[1] = cardClicked;
-                playersTurns[playersTurn - 1]++;
-                delay = 2000;
-
-                if(cardsOrder[cardsClicked[0]] == cardsOrder[cardsClicked[1]]){
-                    playersScore[playersTurn - 1]++;
-                      
-                    showCardGrid();
-
-                    cardsRemoved[cardsClicked[0]] = true;
-                    cardsRemoved[cardsClicked[1]] = true;
-                }else{
-                    showCardGrid();
-
-                    if(playersCount == 2) switchPlayerTurns();
-                }
-                
-                cardsClicked[0] = cardsClicked[1] = 99;
-            }
-        }
-    }
-}
-
-boolean gameIsFinished(){
+boolean gameIsFinished(int[] cardsOrder, boolean[] cardsRemoved, int deathCardCount){
   boolean returnValue = false;
   
   int cardsGuessed = 0; 
@@ -154,59 +101,31 @@ boolean gameIsFinished(){
   return returnValue;
 }
 
-void showPlayerScore(int x, int y, int player){
-    int score = playersScore[player-1];
-    int turn = playersTurns[player-1];
+int switchPlayerTurns(int playersTurn){
+    int returnValue = playersTurn;
 
-    color textColor = 0;
-    if(player == playersTurn) textColor = #00FF00;
-
-    drawTextBox("Player " + player, "center", textColor, x, y, 0, grid);
-    drawTextBox("Score " + score, "center", textColor, x, int(y + grid * 0.5), 0, grid);
-    drawTextBox("Turn " + turn, "center", textColor, x, int(y + grid * 1), 0, grid);
-}
-
-void switchPlayerTurns(){
     switch(playersTurn){
         case 1:
-            playersTurn = 2;
+            returnValue = 2;
             break;
         case 2:
-            playersTurn = 1;
+            returnValue = 1;
             break;
     }
+
+    return returnValue;
 }
 
-int returnCardClicked(){
-    int cardPressed = 99;
+int returnCardClicked(int[][] cardsCoordinates, boolean[] cardsRemoved, int[] cardsClicked){
+    int returnValue = 99;
     
     for(int i = 0; i < cardsCoordinates.length; i++){
         if(!cardsRemoved[i] && !arrayContainsValue(cardsClicked, i))
             if(rectHitTest(cardsCoordinates[i][0],cardsCoordinates[i][1],cardsCoordinates[i][2],cardsCoordinates[i][2]))
-                cardPressed = i;
+                returnValue = i;
     }
 
-    return cardPressed;
-}
-
-void showCardGrid(){
-    for(int i = 0; i < cardsCoordinates.length; i++){
-        if(cardsRemoved[i]){
-            // card is removed from the game
-        }else if(arrayContainsValue(cardsClicked, i)){
-            // kaart is aangeklikt
-            image(cardImages[cardsOrder[i]], cardsCoordinates[i][0], cardsCoordinates[i][1], cardsCoordinates[i][2], cardsCoordinates[i][2]);
-        }else{
-            // show placeholder
-            image(cardImages[33], cardsCoordinates[i][0], cardsCoordinates[i][1], cardsCoordinates[i][2], cardsCoordinates[i][2]);
-        }
-
-        if(rectHoverTest(cardsCoordinates[i][0], cardsCoordinates[i][1], cardsCoordinates[i][2], cardsCoordinates[i][2])){
-            fill(255,255,255,int(255 * 0.1));
-            noStroke();
-            rect(cardsCoordinates[i][0], cardsCoordinates[i][1], cardsCoordinates[i][2], cardsCoordinates[i][2]);
-        }
-    }
+    return returnValue;
 }
 
 boolean arrayContainsValue(int[] array, int value){
@@ -224,12 +143,12 @@ void resetGame(){
     playersTurns[0] = playersTurns[1] = 0;
     cardsClicked[0] = cardsClicked[1] = 99;
     
-    cardsCoordinates = calculateCardCoordinates();
+    cardsCoordinates = calculateCardCoordinates(grid, width, cardSetCount);
     cardsRemoved = new boolean[cardsCoordinates.length];
-    randomizeGrid();
+    cardsOrder = randomizeGrid(cardsCoordinates, deathCardsEnabled);
 }
 
-int[][] calculateCardCoordinates(){
+int[][] calculateCardCoordinates(int grid, int width, int cardSetCount){
     
     // determine grid size & offset
     int offsetY = grid * 4;
@@ -272,13 +191,13 @@ int[][] calculateCardCoordinates(){
     return array;
 }
 
-void randomizeGrid(){
+int[] randomizeGrid(int[][] cardsCoordinates, boolean deathCardsEnabled){
     int cardCount = cardsCoordinates.length;
     boolean[] filledSpots = new boolean[cardCount];
-    cardsOrder = new int[cardCount];
+    int[] returnValue = new int[cardCount];
 
     if(deathCardsEnabled){
-        filledSpots = addDeathCards(cardCount, filledSpots);
+        returnValue = addDeathCards(cardCount);
     }else if(cardCount == 25){
         // remove card in the middle
         cardsRemoved[12] = true;
@@ -287,9 +206,11 @@ void randomizeGrid(){
     
     // count spots already filled by deathcards
     int filledSpotsCount = 0; 
-    for(int i = 0; i < filledSpots.length; i++)
+    for(int i = 0; i < filledSpots.length; i++){
+        if(returnValue[i] == 32) filledSpots[i] = true;
         if(filledSpots[i]) filledSpotsCount++;
-    
+    }
+        
     int assignToIndex = int(random(0, cardCount));
     for(int i = 1; i <= ((cardCount - filledSpotsCount)/2); i++){
         
@@ -297,19 +218,23 @@ void randomizeGrid(){
         while(filledSpots[assignToIndex] == true){
             assignToIndex = int(random(0, cardCount));
         }
-        cardsOrder[assignToIndex] = i;
+        returnValue[assignToIndex] = i;
         filledSpots[assignToIndex] = true;
         
         // assign second card to index
         while(filledSpots[assignToIndex] == true){
             assignToIndex = int(random(0, cardCount));
         }
-        cardsOrder[assignToIndex] = i;
+        returnValue[assignToIndex] = i;
         filledSpots[assignToIndex] = true;
     }
+
+    return returnValue;
 }
 
-boolean[] addDeathCards(int cardCount, boolean[] filledSpots){
+int[] addDeathCards(int cardCount){
+    boolean[] filledSpots = new boolean[cardCount];
+    int[] returnValue = new int[cardCount];
   
     switch(cardCount){
         case 25:
@@ -328,48 +253,14 @@ boolean[] addDeathCards(int cardCount, boolean[] filledSpots){
         
         // assign first card to index
         while(filledSpots[assignToIndex] == true) assignToIndex = int(random(0, cardCount));
-        cardsOrder[assignToIndex] = 32;
+        returnValue[assignToIndex] = 32;
         filledSpots[assignToIndex] = true;
     }
-    return filledSpots;
 
+    return returnValue; //<>//
 }
 
-void showEndMenu(){
-
-    String winner = calculateWinner();
-
-    String text = "Error determining winner";
-    switch(winner){
-        case "tie":
-            text = "It's a tie!";
-            break;
-        case "player1":
-            text = "Player 1 has won!";
-            break;
-        case "player2":
-            text = "Player 2 has won!";
-            break;
-    }
-
-    drawTextBox(text, "center", 0, grid * 10, grid * 3,  0, grid * 3);
-    drawTextBox("Player 1, score: " + playersScore[0] + ", turns: " + playersTurns[0] , "center", 0, grid * 10, grid * 6,  0, grid * 2);
-
-    if(playersCount > 1){
-        drawTextBox("Player 2, score: " + playersScore[1] + ", turns: " + playersTurns[1] , "center", 0, grid * 10, grid * 8,  0, grid * 2);
-    }
-
-    if(drawButtonWithText(grid * 3, grid * 12, width - (grid * 6), grid * 2, #8FBC8F, "Speel opnieuw")){
-        changeScreen("game");
-        resetGame();
-    }
-
-    if(drawButtonWithText(grid * 3, grid * 15, width - (grid * 6), grid * 2, #8FBC8F, "Naar menu")){
-        changeScreen("startMenu");
-    }
-}
-
-String calculateWinner(){
+String calculateWinner(int playersCount, int[] playersScore){
     String returnValue = "player1";
 
     if(playersCount > 1){
@@ -381,178 +272,6 @@ String calculateWinner(){
         }
         if(playersScore[1] > playersScore[0]){
             returnValue = "player2";
-        }
-    }
-
-    return returnValue;
-}
-
-void showStartMenu(){
-    
-    drawTextBox("Aantal spelers", "left", 0, grid * 3, grid * 3, 0, grid * 2);
-    playersCount = drawIncrementControl(width - (grid * 9), grid * 3, grid * 6, grid * 2, #808080, 1, 2, playersCount);
-
-    drawTextBox("Doodskaarten?", "left", 0, grid * 3, grid * 6, 0, grid * 2);
-    String[] options = {"Ja", "Nee"};
-    String currentlySelected = deathCardsEnabled ? "Ja" : "Nee";
-    switch(drawStringSegmentControl(grid * 11, grid * 6, grid* 6, grid * 2, #808080, options, currentlySelected)){
-        case "Ja":
-            deathCardsEnabled = true;
-            break;
-        case "Nee":
-            deathCardsEnabled = false;
-            break;
-    }
-
-    drawTextBox("Aantal Setjes", "left", 0, grid * 3, grid * 9, 0, grid * 2);
-    cardSetCount = drawIntSegmentControl(grid * 3, grid * 11, width - (grid * 6), grid * 2, #808080, cardSetCountOptions, cardSetCount);
-    
-    if(drawButtonWithText(grid * 3, grid * 14, width - (grid * 6), grid * 3, #8FBC8F, "Start Game")){
-        changeScreen("game");
-        resetGame();
-    }
-}
-
-int drawIncrementControl(int x, int y, int btnWidth, int btnHeight, color btnColor, int min, int max, int currentValue){
-    int returnValue = currentValue;
-    btnWidth = btnWidth / 3;
-
-    // arrow left 
-    if(drawArrowButton(x, y, btnWidth, btnHeight, btnColor, "left")) returnValue = constrain(returnValue - 1, min, max);
-    
-    // integer
-    x = x + btnWidth;
-    drawTextBox(nf(currentValue), "center", 0, x, y, btnWidth, btnHeight);
-
-    // arrow right
-    x = x + btnWidth;
-    if(drawArrowButton(x, y, btnWidth, btnHeight, btnColor, "right")) returnValue = constrain(returnValue + 1, min, max);
-    
-    return returnValue;
-}
-
-boolean drawArrowButton(int x, int y, int btnWidth, int btnHeight, color btnColor, String oriented){
-    
-    if(rectHoverTest(x, y, btnWidth, btnHeight)) btnColor = changeColorBrightness(btnColor, +15);
-    
-    switch(oriented){
-      case "left":
-        int shapeX = x + btnWidth;
-        int shapeY = y + btnHeight;
-        arrowL.disableStyle();
-        fill(btnColor);
-        shape(arrowL, shapeX, shapeY, btnWidth, btnHeight);
-        break;
-      case "right":
-        arrowR.disableStyle();
-        fill(btnColor);
-        shape(arrowR, x, y, btnWidth, btnHeight);
-        break;
-    }
-
-    boolean returnValue = rectHitTest(x, y, btnWidth, btnHeight);
-    return returnValue;
-}
-
-int drawIntSegmentControl(int x, int y, int btnWidth, int btnHeight, color btnColor, int[] options, int currentlySelected){
-
-    int returnValue = currentlySelected;
-    btnWidth = btnWidth / options.length;
-    color newBtnColor = btnColor;
-
-    for(int i = 0; i < options.length; i++){
-        if(options[i] == currentlySelected){
-            newBtnColor = changeColorBrightness(btnColor, -30);
-        }else{
-            newBtnColor = btnColor;
-        }
-        if(drawButtonWithText(x + (i * btnWidth), y, btnWidth, btnHeight, newBtnColor, nf(options[i]))){
-            returnValue = options[i];
-        }
-    }
-
-    return returnValue;
-}
-
-String drawStringSegmentControl(int x, int y, int btnWidth, int btnHeight, color btnColor, String[] options, String currentlySelected){
-
-    String returnValue = currentlySelected;
-    btnWidth = btnWidth / options.length;
-    color newBtnColor = btnColor;
-
-    for(int i = 0; i < options.length; i++){
-        if(options[i] == currentlySelected){
-            newBtnColor = changeColorBrightness(btnColor, -30);
-        }else{
-            newBtnColor = btnColor;
-        }
-        if(drawButtonWithText(x + (i * btnWidth), y, btnWidth, btnHeight, newBtnColor, options[i])){
-            returnValue = options[i];
-        }
-    }
-
-    return returnValue;
-}
-
-boolean drawButtonWithText(int x, int y, int btnWidth, int btnHeight, color btnColor, String btnText){
-
-    if(rectHoverTest(x, y, btnWidth, btnHeight)){
-        fill(changeColorBrightness(btnColor, +15));
-    }else{
-        fill(btnColor);
-    }
-    rect(x, y, btnWidth, btnHeight);
-
-    drawTextBox(btnText, "center", 0, x, y, btnWidth, btnHeight);
-
-    boolean returnValue = rectHitTest(x, y, btnWidth, btnHeight);
-    return returnValue;
-}
-
-void drawTextBox(String text, String allignment, color textColor, int x, int y, int textBoxWidth, int textBoxHeight){
-    
-    fill(textColor);
-    textSize(textBoxHeight * 0.6);
-    y = y + int((textBoxHeight / 2) * 1.25);
-    if(allignment == "left"){
-        textAlign(LEFT);
-    }else{
-        textAlign(CENTER);
-        x = x + (textBoxWidth / 2);
-    }
-    text(text, x, y);
-}
-
-color changeColorBrightness(color originalColor, int factor){
-  int red = constrain(int(red(originalColor)) + factor, 0, 255);
-  int green = constrain(int(green(originalColor)) + factor, 0, 255);
-  int blue = constrain(int(blue(originalColor)) + factor, 0, 255);
-  
-  return color(red, green, blue);
-}
-
-boolean rectHoverTest(int x, int y, int btnWidth, int btnHeight){
-    boolean returnValue = false;
-
-    if(mouseX >= x && mouseX <= (x + btnWidth)){
-        if(mouseY >= y && mouseY <= (y + btnHeight)){
-            returnValue = true;
-        }
-    }
-
-    return returnValue;
-}
-
-boolean rectHitTest(int x, int y, int btnWidth, int btnHeight){
-    boolean returnValue = false;
-
-    if(rectHoverTest(x, y, btnWidth, btnHeight)){
-        if(mousePressed){
-            returnValue = true;
-            
-            // to avoid dubble press
-            delay(50);
-            mousePressed = false;
         }
     }
 
