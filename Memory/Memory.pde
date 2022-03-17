@@ -87,7 +87,7 @@ void changeScreen(String screen){
     }
 }
 
-boolean gameIsFinished(int[] cardsOrder, boolean[] cardsRemoved, int deathCardCount){
+boolean gameIsFinished(int[] cardsOrder, boolean[] cardsRemoved, int deathCardCount, int[][] cardsCoordinates){
   boolean returnValue = false;
   
   int cardsGuessed = 0; 
